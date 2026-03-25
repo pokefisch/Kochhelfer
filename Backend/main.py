@@ -1,4 +1,5 @@
 import scrapping
+import communication
 
 def main():
     url = input("Enter the recipe URL: ")
