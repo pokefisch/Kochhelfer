@@ -3,7 +3,7 @@ from curl_cffi import requests
 from recipe_scrapers import scrape_html
 
 def parse_ingredient(raw_string: str) -> dict:
-    """Splits a raw ingredient string into amount, unit, and name."""
+    # Splits a raw ingredient string into amount, unit, and name.
     
     # UPGRADE: Added the '/' inside the first brackets so it catches "1/2" or "3/4"
     match = re.match(r'^([\d.,/]+)\s*([a-zA-ZäöüÄÖÜß()]+)?\s+(.*)', raw_string.strip())
@@ -67,19 +67,22 @@ def fetch(url):
     # We create a new, clean dictionary that perfectly matches your Flutter RecipeModel!
     
     # Grab the raw serving string (from yields or nutrients)
+    raw_ingredients = raw_data.get("ingredients", [])
+    parsed_ingredients = [parse_ingredient(ing) for ing in raw_ingredients]
+
     raw_serving = raw_data.get("yields") or raw_data.get("nutrients", {}).get("servingSize", "1")
     
     clean_recipe_data = {
         "title": raw_data.get("title", "Unbekanntes Rezept"),
         
         # Format the time nicely for the UI (e.g., turns 40 into "40 Min")
-        "prep_time": f"{raw_data.get('total_time', 0)} Min",
+        "prep_time_minutes": raw_data.get("total_time", 0),
         
         # Rename 'image' to match Flutter's 'image_url' expectation
         "image_url": raw_data.get("image", ""),
         
         # Pass the ingredients list exactly as is
-        "ingredients": raw_data.get("ingredients", []),
+        "ingredients": parsed_ingredients,
         
         # Run our regex cleaner to get a pure integer!
         "servings": clean_serving_size(raw_serving),

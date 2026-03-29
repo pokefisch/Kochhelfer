@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:kochhelfer_ui/models/RecipeModel.dart';
 import 'dart:convert';
 import 'package:kochhelfer_ui/pages/drawerfunctions.dart';
 // TODO: Make sure to import your RecipeModel and RecipePage here later!
@@ -19,6 +20,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     placeholder: (context, url) => const CircularProgressIndicator(),
     errorWidget: (context, url, error) => const Icon(Icons.error),
   );
+  RecipeModel? fetchedRecipe; // This will hold the recipe data once we fetch it!
   final TextEditingController _urlController = TextEditingController();
   
   // 1. We add the loading state variable here!
@@ -51,9 +53,16 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
       );
       
       if (response.statusCode == 200) {
-        print('Success! Data: ${response.body}');
-        // NEXT STEP LATER: Decode this JSON into your RecipeModel 
-        // and display it under "Gefundenes Rezept:"!
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        setState(() {
+          fetchedRecipe = RecipeModel.fromJson(responseData);
+          recipeImage = CachedNetworkImage(
+            imageUrl: fetchedRecipe!.imageUrl,
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+            scale: 2,
+          );
+        });
       } else {
         print('Server Error: ${response.statusCode}');
       }
@@ -117,10 +126,55 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
-                      // Here is where you will eventually display the parsed RecipeModel data!
-                      // For now, it's just a placeholder.
-                      const Text('Noch kein Rezept gesucht.', style: TextStyle(color: Colors.grey)),
+                      if (fetchedRecipe == null) 
+                        const Text('Noch kein Rezept gesucht.', style: TextStyle(color: Colors.grey))
+                      else ...[
+                        // Display the recipe image
+                        Center(child: recipeImage),
+                        const SizedBox(height: 20),
+                        
+                        // Display the recipe title
+                        Text(
+                          fetchedRecipe!.title,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 27, 121, 184),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        
+                        // Display preparation time and servings
+                        Text(
+                          'Zubereitungszeit: ${fetchedRecipe!.prepTimeMinutes} Minuten | Portionen: ${fetchedRecipe!.servings}',
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        
+                        // Display ingredients
+                        const Text(
+                          'Zutaten:',
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 27, 121, 184),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        
+                        // List of ingredients
+                        ...fetchedRecipe!.ingredients.map((ingredient) => Text(
+                          '- ${ingredient.amount} ${ingredient.unit} ${ingredient.name}',
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                        )),
+                      ],
+
                     ],
                   ),
                 )
