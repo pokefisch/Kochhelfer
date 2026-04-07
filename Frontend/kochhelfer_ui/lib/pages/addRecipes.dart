@@ -31,7 +31,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     _urlController.dispose();
     super.dispose();
   }
-
+  
   // 2. We moved the fetch function INSIDE the class
   Future<void> fetchData(String recipeUrl) async {
     // Turn on the loading spinner
@@ -39,7 +39,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
       isLoading = true;
     });
 
-    final Uri apiUrl = Uri.parse('http://10.0.2.2:8000/send_url');
+    final Uri apiUrl = Uri.parse('http://192.168.178.68:8000/send_url');
     
     try {
       final response = await http.post(
@@ -102,84 +102,120 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
                 color: Color.fromARGB(255, 27, 121, 184),
               ),
             )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                urlSearchField(),
-                const SizedBox(height: 20),
-                Center(child: addRecipeButton()), // Wrapped in Center to prevent stretching
-                const SizedBox(height: 40),
-                
-                // The Results Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Gefundenes Rezept:',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 27, 121, 184),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+          : SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    urlSearchField(),
+                    const SizedBox(height: 20),
+                    Center(child: addRecipeButton()), // Wrapped in Center to prevent stretching
+                    const SizedBox(height: 40),
+                    
+                    // The Results Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Gefundenes Rezept:',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 27, 121, 184),
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          if (fetchedRecipe == null) 
+                            const Text('Noch kein Rezept gesucht.', style: TextStyle(color: Colors.grey))
+                          else ...[
+                            // Display the recipe image
+                            Center(child: recipeImage),
+                            const SizedBox(height: 20),
+                            
+                            // Display the recipe title
+                            Text(
+                              fetchedRecipe!.title,
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 27, 121, 184),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            
+                            // Display preparation time and servings
+                            Text(
+                              'Zubereitungszeit: ${fetchedRecipe!.prepTimeMinutes} Minuten | Portionen: ${fetchedRecipe!.servings}',
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Display ingredients
+                            const Text(
+                              'Zutaten:',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 27, 121, 184),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            
+                            // List of ingredients
+                            ...fetchedRecipe!.ingredients.map((ingredient) => Text(
+                              '- ${ingredient.amount} ${ingredient.unit} ${ingredient.name}',
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16,
+                              ),
+                            )),
+                            const SizedBox(height: 20),
+                            //Save recipe button
+                            Center(child: saveRecipeButton()),
+                            const SizedBox(height: 40),
+                          ],
+              
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                      if (fetchedRecipe == null) 
-                        const Text('Noch kein Rezept gesucht.', style: TextStyle(color: Colors.grey))
-                      else ...[
-                        // Display the recipe image
-                        Center(child: recipeImage),
-                        const SizedBox(height: 20),
-                        
-                        // Display the recipe title
-                        Text(
-                          fetchedRecipe!.title,
-                          style: const TextStyle(
-                            color: Color.fromARGB(255, 27, 121, 184),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        
-                        // Display preparation time and servings
-                        Text(
-                          'Zubereitungszeit: ${fetchedRecipe!.prepTimeMinutes} Minuten | Portionen: ${fetchedRecipe!.servings}',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        
-                        // Display ingredients
-                        const Text(
-                          'Zutaten:',
-                          style: TextStyle(
-                            color: Color.fromARGB(255, 27, 121, 184),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        
-                        // List of ingredients
-                        ...fetchedRecipe!.ingredients.map((ingredient) => Text(
-                          '- ${ingredient.amount} ${ingredient.unit} ${ingredient.name}',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 16,
-                          ),
-                        )),
-                      ],
-
-                    ],
-                  ),
-                )
-              ],
+                    )
+                  ],
+                ),
             ),
+          ),
+    );
+  }
+  Container saveRecipeButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: ElevatedButton(
+        onPressed: () {
+          String url = _urlController.text;
+          if (url.trim().isNotEmpty) {
+            fetchData(url); // This now safely triggers the spinner!
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 199, 58, 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+        ),
+        child: const Text(
+          'Rezept speichern',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 

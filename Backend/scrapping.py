@@ -55,12 +55,13 @@ def fetch(url):
     print(f"Fetching {url} with Chrome impersonation...")
     
     response = requests.get(url, impersonate="chrome")
-    
     if response.status_code != 200:
         print(f"Still blocked! Status code: {response.status_code}")
         return {} # Return empty dict on failure
 
     scraper = scrape_html(html=response.text, org_url=url)
+    print(scraper.to_json())
+
     raw_data = safe_extract(scraper.to_json, default={})
 
     # --- THE DATA CLEANING PIPELINE ---
@@ -72,14 +73,23 @@ def fetch(url):
 
     raw_serving = raw_data.get("yields") or raw_data.get("nutrients", {}).get("servingSize", "1")
     
+    category_str = raw_data.get("category", "")
+    categories = [tag.strip() for tag in category_str.split(',')] if category_str else []
+    tags = list(set(categories + raw_data.get("keywords", [])))  # Combine and deduplicate tags
+
     clean_recipe_data = {
+
+        "tags": tags,  # Pass the combined and cleaned tags list
+
+        "link": url,
+
         "title": raw_data.get("title", "Unbekanntes Rezept"),
         
         # Format the time nicely for the UI (e.g., turns 40 into "40 Min")
-        "prep_time_minutes": raw_data.get("total_time", 0),
+        "duration": raw_data.get("total_time", 0),
         
         # Rename 'image' to match Flutter's 'image_url' expectation
-        "image_url": raw_data.get("image", ""),
+        "image": raw_data.get("image", ""),
         
         # Pass the ingredients list exactly as is
         "ingredients": parsed_ingredients,
@@ -88,7 +98,10 @@ def fetch(url):
         "servings": clean_serving_size(raw_serving),
         
         # Let's also pass the instructions list so you can build that part of the UI later!
-        "instructions": raw_data.get("instructions_list", [])
+        "instructions": raw_data.get("instructions_list", []),
+
+        "equipment": raw_data.get("equipment", [])  # Optional: List of equipment if available
     }
+
 
     return clean_recipe_data
