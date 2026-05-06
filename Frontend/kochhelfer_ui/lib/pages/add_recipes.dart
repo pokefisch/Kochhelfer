@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:kochhelfer_ui/models/RecipeModel.dart';
+import 'package:kochhelfer_ui/models/recipe_model.dart';
 import 'dart:convert';
 import 'package:kochhelfer_ui/pages/drawerfunctions.dart';
 import 'package:kochhelfer_ui/config.dart';
-// TODO: Make sure to import your RecipeModel and RecipePage here later!
+// TODO: Make sure to import your RecipePage here later!
 
 class AddRecipesPage extends StatefulWidget {
   const AddRecipesPage({super.key});
@@ -17,6 +17,7 @@ class AddRecipesPage extends StatefulWidget {
 }
 
 class _AddRecipesPageState extends State<AddRecipesPage> {
+  ScaffoldMessengerState? _messenger; // This will hold the ScaffoldMessenger for showing SnackBars
   CachedNetworkImage recipeImage = CachedNetworkImage(
     imageUrl: '',
     placeholder: (context, url) => const CircularProgressIndicator(),
@@ -30,9 +31,18 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
 
   @override
   void dispose() {
+    _messenger?.hideCurrentSnackBar(); // Hide any active SnackBar when leaving the page
     _urlController.dispose();
     super.dispose();
   }
+
+@override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 2. Capture the reference while the context is still valid
+    _messenger = ScaffoldMessenger.of(context);
+  }
+
   // fetch Data for the recipe from the backend using the provided URL
   Future<void> fetchData(String recipeUrl) async {
     // Turn on the loading spinner
@@ -65,10 +75,8 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
           );
         });
       } else {
-        print('Server Error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Network Error: $e');
     } finally {
       // Turn off the loading spinner, no matter what happens!
       setState(() {
@@ -80,22 +88,18 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
   Future<bool> saveRecipe() async {
     if (fetchedRecipe == null) return false; // No recipe to save!
 
-    final Uri apiUrl = Uri.parse('http://172.24.245.2:8000/save_recipe');
-    try {
+      final Uri apiUrl = Uri.parse('${ApiConfig.baseUrl}/save_recipe');    try {
       final response = await http.post(
         apiUrl,
         
       );
       
       if (response.statusCode == 200) {
-        print('Rezept erfolgreich gespeichert!');
         return true; // Assuming the backend returns a success status
       } else {
-        print('Server Error: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('Network Error: $e');
       return false;
     }
   }
@@ -141,7 +145,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
       
       // 3. We tell the body to show a spinner if isLoading is true!
       body: isLoading 
-          ? LoadingIndicator()
+          ? loadingIndicator()
           : SafeArea(
             child: SingleChildScrollView(
               child: Column(
@@ -231,7 +235,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     );
   }
 
-  Center LoadingIndicator() {
+  Center loadingIndicator() {
     return const Center(
             child: CircularProgressIndicator(
               color: Color.fromARGB(255, 27, 121, 184),

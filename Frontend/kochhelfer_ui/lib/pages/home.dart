@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kochhelfer_ui/pages/addRecipes.dart';
 import 'package:kochhelfer_ui/pages/drawerfunctions.dart';
 
 class HomePage extends StatefulWidget {
   
   
-   HomePage({
+   const HomePage({
     super.key,
   });
     @override
@@ -82,23 +79,23 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(height: 20),
-        GridView.builder(
-          itemCount: categories.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 0.8,
-          ),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return InkWell(
-              onTap: () {
-                Navigator.pushReplacement(context)
-              },
-            )
-          },
-        ),
+        // GridView.builder(
+        //   itemCount: categories.length,
+        //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        //     crossAxisCount: 2,
+        //     mainAxisSpacing: 20,
+        //     crossAxisSpacing: 20,
+        //     childAspectRatio: 0.8,
+        //   ),
+        //   itemBuilder: (context, index) {
+        //     final category = categories[index];
+        //     return InkWell(
+        //       onTap: () {
+        //         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddRecipesPage()));
+        //       }
+        //      );
+        //   },
+        // ),
       ],
     ),
     

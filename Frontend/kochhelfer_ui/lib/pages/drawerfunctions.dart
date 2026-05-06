@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:kochhelfer_ui/pages/addRecipes.dart';
+import 'package:kochhelfer_ui/pages/add_recipes.dart';
 import 'package:kochhelfer_ui/pages/home.dart';
 import 'package:kochhelfer_ui/pages/search_page.dart';
 class MainDrawer extends StatelessWidget {

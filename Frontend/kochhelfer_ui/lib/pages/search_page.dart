@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'package:kochhelfer_ui/pages/drawerfunctions.dart';
 import 'package:kochhelfer_ui/config.dart';
-import 'package:kochhelfer_ui/models/RecipePreviewModel.dart';
+import 'package:kochhelfer_ui/models/recipe_preview_model.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -44,7 +43,6 @@ class _SearchPageState extends State<SearchPage> {
         });
       }
     } catch (e) {
-      print('Network Error: $e');
     }
   }
 
@@ -72,11 +70,8 @@ class _SearchPageState extends State<SearchPage> {
         setState(() {
           searchResults = data.map((json) => RecipePreviewModel.fromJson(json)).toList();
         });
-      } else {
-        print('Server Error: ${response.statusCode}');
-      }
+      } 
     } catch (e) {
-      print('Network Error: $e');
     } finally {
       setState(() {
         isLoading = false;
