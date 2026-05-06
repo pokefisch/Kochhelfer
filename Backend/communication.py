@@ -36,9 +36,12 @@ def receive_url_endpoint(body: rezept_url_body):
 def save_recipe_endpoint():
         if not main.savedRecipe:
             return {"message": "No recipe data to save!"}
-        db_manager.save_recipe_to_db(main.savedRecipe)
-
-        return {"message": "Recipe data saved successfully!"}
+        try:
+            db_manager.save_recipe_to_db(main.savedRecipe)
+            return True, {"message": "Recipe data saved successfully!"}
+        except Exception as e:
+            print(f"Error saving recipe data: {e}")
+            return False, {"message": "Failed to save recipe data!"}
 
 @app.get("/categories")
 def get_categories_endpoint():

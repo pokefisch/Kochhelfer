@@ -60,7 +60,7 @@ def fetch(url):
         return {} # Return empty dict on failure
 
     scraper = scrape_html(html=response.text, org_url=url)
-    print(scraper.to_json())
+    print(f"Fetching recipe for: {scraper.title()}")
 
     raw_data = safe_extract(scraper.to_json, default={})
 
