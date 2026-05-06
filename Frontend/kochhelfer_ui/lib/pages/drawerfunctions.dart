@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:kochhelfer_ui/pages/addRecipes.dart';
 import 'package:kochhelfer_ui/pages/home.dart';
+import 'package:kochhelfer_ui/pages/search_page.dart';
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
 
@@ -40,22 +41,32 @@ class MainDrawer extends StatelessWidget {
             },
           ),
           
-          // 2. Search (Fixed with dimensions and a title!)
+          // 2. Search
           ListTile(
-            // No 'const' here!
             leading: SvgPicture.asset(
               'assets/icons/Search.svg',
-              width: 24, // Matches standard Material Icon size
+              width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(Colors.black87, BlendMode.srcIn), // Ensures it matches your theme
+              colorFilter: const ColorFilter.mode(Colors.black87, BlendMode.srcIn),
             ),
-            title: const Text('Suche'), // Added a title so it's not blank!
+            title: const Text('Suche'),
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => AddRecipesPage()),
+                MaterialPageRoute(builder: (context) => const SearchPage()),
               );
-              // Handle Search tap
+            },
+          ),
+          
+          // 3. Add Recipe
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('Hinzufügen'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AddRecipesPage()),
+              );
             },
           ),
           

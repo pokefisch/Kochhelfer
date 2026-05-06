@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:kochhelfer_ui/models/RecipeModel.dart';
 import 'dart:convert';
 import 'package:kochhelfer_ui/pages/drawerfunctions.dart';
+import 'package:kochhelfer_ui/config.dart';
 // TODO: Make sure to import your RecipeModel and RecipePage here later!
 
 class AddRecipesPage extends StatefulWidget {
@@ -39,7 +40,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
       isLoading = true;
     });
 
-    final Uri apiUrl = Uri.parse('http://192.168.178.68:8000/send_url');
+    final Uri apiUrl = Uri.parse('${ApiConfig.baseUrl}/send_url');
     
     try {
       final response = await http.post(

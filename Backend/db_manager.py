@@ -152,3 +152,41 @@ def fetch_for_ingredients(ingredient_ids):
         print(f"Database Error: {e}")
         return []
     
+
+def get_all_categories():
+    try:
+        with sqlite3.connect("recipes.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT DISTINCT name FROM tags ORDER BY name")
+            return [row[0] for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"Database Error: {e}")
+        return []
+
+def search_recipes(query=None, category=None):
+    try:
+        with sqlite3.connect("recipes.db") as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            sql = "SELECT DISTINCT r.id, r.title, r.duration, r.portions, r.image FROM recipes r"
+            params = []
+            conditions = []
+            
+            if category:
+                sql += " JOIN recipe_tags rt ON r.id = rt.recipe_id JOIN tags t ON rt.tag_id = t.id"
+                conditions.append("t.name = ?")
+                params.append(category)
+                
+            if query:
+                conditions.append("r.title LIKE ?")
+                params.append(f"%{query}%")
+                
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+                
+            cursor.execute(sql, params)
+            return [dict(row) for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"Database Error: {e}")
+        return []

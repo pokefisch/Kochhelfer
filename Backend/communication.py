@@ -1,5 +1,6 @@
 import asyncio
 from pdb import main
+from typing import Optional
 
 from fastapi import FastAPI, WebSocket
 import db_manager
@@ -38,3 +39,11 @@ def save_recipe_endpoint():
         db_manager.save_recipe_to_db(main.savedRecipe)
 
         return {"message": "Recipe data saved successfully!"}
+
+@app.get("/categories")
+def get_categories_endpoint():
+        return db_manager.get_all_categories()
+
+@app.get("/search_recipes")
+def search_recipes_endpoint(query: Optional[str] = None, category: Optional[str] = None):
+        return db_manager.search_recipes(query, category)
