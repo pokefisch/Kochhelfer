@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -20,10 +21,10 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     placeholder: (context, url) => const CircularProgressIndicator(),
     errorWidget: (context, url, error) => const Icon(Icons.error),
   );
-  RecipeModel? fetchedRecipe; // This will hold the recipe data once we fetch it!
+  RecipeModel? fetchedRecipe; // This will hold the recipe data 
   final TextEditingController _urlController = TextEditingController();
   
-  // 1. We add the loading state variable here!
+  //add the loading state variable
   bool isLoading = false;
 
   @override
@@ -31,15 +32,14 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     _urlController.dispose();
     super.dispose();
   }
-  
-  // 2. We moved the fetch function INSIDE the class
+  // fetch Data for the recipe from the backend using the provided URL
   Future<void> fetchData(String recipeUrl) async {
     // Turn on the loading spinner
     setState(() {
       isLoading = true;
     });
 
-    final Uri apiUrl = Uri.parse('http://192.168.178.68:8000/send_url');
+    final Uri apiUrl = Uri.parse('http://172.24.245.2:8000/send_url');
     
     try {
       final response = await http.post(
@@ -76,6 +76,49 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
     }
   }
 
+  Future<bool> saveRecipe() async {
+    if (fetchedRecipe == null) return false; // No recipe to save!
+
+    final Uri apiUrl = Uri.parse('http://172.24.245.2:8000/save_recipe');
+    try {
+      final response = await http.post(
+        apiUrl,
+        
+      );
+      
+      if (response.statusCode == 200) {
+        print('Rezept erfolgreich gespeichert!');
+        return true; // Assuming the backend returns a success status
+      } else {
+        print('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return false;
+    }
+  }
+  void showFeedbackDialog(String message, bool isSuccess) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ), 
+      ),
+      backgroundColor: isSuccess ? Colors.green : Colors.redAccent,
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 3),
+      action: SnackBarAction(
+        label: 'OK', 
+        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+      );
+      ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,11 +140,7 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
       
       // 3. We tell the body to show a spinner if isLoading is true!
       body: isLoading 
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Color.fromARGB(255, 27, 121, 184),
-              ),
-            )
+          ? LoadingIndicator()
           : SafeArea(
             child: SingleChildScrollView(
               child: Column(
@@ -190,15 +229,29 @@ class _AddRecipesPageState extends State<AddRecipesPage> {
           ),
     );
   }
+
+  Center LoadingIndicator() {
+    return const Center(
+            child: CircularProgressIndicator(
+              color: Color.fromARGB(255, 27, 121, 184),
+            ),
+          );
+  }
   Container saveRecipeButton() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           String url = _urlController.text;
           if (url.trim().isNotEmpty) {
-            fetchData(url); // This now safely triggers the spinner!
+            bool response = await saveRecipe(); // This now safely triggers the spinner!
+            if (response) {
+              showFeedbackDialog('Rezept erfolgreich gespeichert!', true);
+            } else {
+              showFeedbackDialog('Fehler beim Speichern des Rezepts.', false);
+            }
           }
+          
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromARGB(255, 199, 58, 15),

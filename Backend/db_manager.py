@@ -74,6 +74,7 @@ def initialize_database():
         print(f"An error occurred while creating the database: {e}")
 
 def save_recipe_to_db(recipe_data):
+    print(f"Saving recipe to database: {recipe_data['title']}")
     if not recipe_data: return
     
     try:
